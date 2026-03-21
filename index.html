@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Delícias da Tati - Delivery</title>
+    
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    
+    <style>
+        :root {
+            --primary: #d63384; 
+            --secondary: #0dcaf0; 
+            --success: #28a745;
+            --dark: #212529;
+            --bg: #f8f9fa;
+        }
+
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; background: var(--bg); padding-bottom: 140px; color: #333; }
+        
+        header { 
+            background: linear-gradient(135deg, var(--primary), #8e44ad); 
+            color: white; text-align: center; 
+            padding: 20px 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.2); 
+        }
+
+        .logo-topo {
+            max-width: 120px;
+            height: auto;
+            margin-bottom: 10px;
+        }
+
+        .container { max-width: 500px; margin: auto; padding: 15px; }
+
+        .categories { display: flex; gap: 10px; overflow-x: auto; padding: 10px 0; margin-bottom: 20px; scrollbar-width: none; }
+        .categories::-webkit-scrollbar { display: none; }
+        .categories button { 
+            background: white; border: 2px solid var(--secondary); color: var(--dark);
+            padding: 10px 20px; border-radius: 25px; font-weight: bold; cursor: pointer; white-space: nowrap;
+            transition: 0.3s;
+        }
+        .categories button.active { background: var(--secondary); color: white; border-color: var(--secondary); }
+
+        .card { 
+            background: white; border-radius: 15px; margin-bottom: 15px; 
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 15px; box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+            border-left: 6px solid var(--primary);
+            transition: transform 0.2s;
+        }
+        .card:active { transform: scale(0.98); }
+        .card-info h3 { margin: 0; font-size: 1.05rem; }
+        .card-info span { color: var(--primary); font-weight: bold; font-size: 1.1rem; display: block; margin-top: 5px; }
+        
+        .btn-add { 
+            background: var(--primary); color: white; border: none; 
+            padding: 10px 15px; border-radius: 10px; cursor: pointer; font-weight: bold;
+            transition: all 0.3s ease;
+        }
+
+        .section-title { 
+            border-bottom: 2px solid var(--secondary); 
+            margin: 30px 0 15px; font-size: 1.2rem; font-weight: bold; color: var(--primary);
+        }
+
+        .form-group { background: #fff; padding: 20px; border-radius: 15px; box-shadow: 0 4px 12px rgba(0,0,0,0.08); }
+        input, select, textarea { 
+            width: 100%; padding: 14px; margin: 8px 0; border: 1px solid #ddd; 
+            border-radius: 10px; font-size: 1rem; box-sizing: border-box;
+        }
+
+        #cart-list { background: #fff; padding: 15px; border-radius: 12px; border: 2px dashed var(--secondary); margin-bottom: 15px; min-height: 40px; }
+        .cart-item { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid #eee; }
+        .qty-controls { display: flex; align-items: center; gap: 8px; }
+        .btn-qty { background: #f0f0f0; border: none; width: 30px; height: 30px; border-radius: 5px; cursor: pointer; font-weight: bold; }
+
+        .delivery-info { background: #fff3cd; padding: 12px; border-radius: 10px; margin-top: 10px; font-size: 0.9rem; color: #856404; text-align: center; border: 1px solid #ffeeba; }
+
+        #map { height: 200px; width: 100%; border-radius: 15px; margin-top: 10px; border: 2px solid #fff; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+        .map-caption { text-align: center; font-weight: bold; color: var(--dark); margin-top: 8px; font-size: 0.9rem; }
+
+        #msg-taxa-cartao { color: #d9534f; font-size: 0.85rem; font-weight: bold; margin-top: 5px; display: none; }
+
+        .footer-cart { 
+            position: fixed; bottom: 0; width: 100%; background: #2c3e50; 
+            color: white; padding: 20px; box-sizing: border-box; z-index: 1000;
+            display: flex; justify-content: space-between; align-items: center;
+            border-radius: 25px 25px 0 0;
+        }
+        .btn-order { background: var(--success); color: white; border: none; padding: 15px 25px; border-radius: 12px; font-weight: bold; cursor: pointer; font-size: 1.1rem; }
+    </style>
+</head>
+<body>
+
+<header>
+    <img src="https://i.ibb.co/FkBtJ01X/DT-Log.png" alt="Delícias da Tati" class="logo-topo">
+    <p style="margin:0; opacity: 0.9;">Delivery: Sex, Sáb e Dom</p>
+</header>
+
+<div class="container">
+    <div class="categories" id="cat-nav">
+        <button onclick="filterMenu('Tudo', this)" class="active">Todos</button>
+        <button onclick="filterMenu('Tradicionais', this)">Tradicionais</button>
+        <button onclick="filterMenu('Massas', this)">Massas</button>
+        <button onclick="filterMenu('Molhos', this)">Molhos</button>
+        <button onclick="filterMenu('Combos', this)">Combos</button>
+        <button onclick="filterMenu('Salgados', this)">Salgados</button>
+        <button onclick="filterMenu('Doces', this)">Doces</button>
+        <button onclick="filterMenu('Bebidas', this)">Bebidas</button>
+    </div>
+
+    <div id="products-grid"></div>
+
+    <h3 class="section-title">🛒 Seu Carrinho</h3>
+    <div id="cart-list">Nenhum item selecionado...</div>
+    <div class="delivery-info">🛵 Entrega disponível para determinados locais. <strong>Consulte taxa e disponibilidade.</strong></div>
+
+    <h3 class="section-title">📍 Endereço de Entrega</h3>
+    <div class="form-group">
+        <input type="text" id="cust-name" placeholder="Nome Completo*">
+        <input type="text" id="cust-cep" placeholder="CEP (Busca Automática)" maxlength="9">
+        <div style="display: flex; gap: 8px;">
+            <input type="text" id="cust-addr" placeholder="Rua*" style="flex: 3;">
+            <input type="text" id="cust-num" placeholder="Nº*" style="flex: 1;">
+        </div>
+        <input type="text" id="cust-bairro" placeholder="Bairro*">
+        <input type="text" id="cust-ref" placeholder="Ponto de Referência">
+        <textarea id="cust-obs" placeholder="Observações (Opcional)"></textarea>
+
+        <select id="pay-method" onchange="handlePaymentChange()">
+            <option value="">Forma de Pagamento*</option>
+            <option value="PIX">PIX</option>
+            <option value="Cartão">Cartão (Maquininha)</option>
+            <option value="Dinheiro">Dinheiro</option>
+        </select>
+        <div id="msg-taxa-cartao">⚠️ Pagamento no cartão possui acréscimo de 6% da operadora.</div>
+        <input type="text" id="cust-troco" placeholder="Troco para quanto?" style="display:none">
+    </div>
+
+    <h3 class="section-title">🚩 Onde estamos</h3>
+    <div id="map"></div>
+    <div class="map-caption">Ananindeua-Pará</div>
+</div>
+
+<div class="footer-cart">
+    <div>Total Itens:<br><strong id="total-price" style="font-size:1.5rem">R$ 0.00</strong></div>
+    <button class="btn-order" id="btn-finalizar" onclick="sendWhatsApp()">Enviar Pedido</button>
+</div>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
+    const MY_PHONE = "5591991625255"; 
+    
+    const menu = [
+        { name: "Torta salgada", price: 12.00, cat: "Tradicionais" },
+        { name: "Arroz c/ galinha", price: 13.00, cat: "Tradicionais" },
+        { name: "Arroz c/ charque e calabresa", price: 13.00, cat: "Tradicionais" },
+        { name: "Arroz paraense", price: 15.00, cat: "Tradicionais" },
+        { name: "Salpicão de Frango", price: 13.00, cat: "Tradicionais" },
+        { name: "Empadão frango", price: 12.00, cat: "Tradicionais" },
+        { name: "Escondidinho de carne", price: 15.00, cat: "Tradicionais" },
+        { name: "Yakisoba", price: 15.00, cat: "Tradicionais" },
+        { name: "Salada de camarão", price: 15.00, cat: "Tradicionais" },
+        { name: "Lasanha de carne", price: 15.00, cat: "Massas" },
+        { name: "Lasanha de frango", price: 15.00, cat: "Massas" },
+        { name: "Camusquim de camarão", price: 15.00, cat: "Massas" },
+        { name: "Macarronada de camarão rosa", price: 17.00, cat: "Massas" },
+        { name: "Panqueca de carne", price: 15.00, cat: "Massas" },
+        { name: "Panqueca de frango", price: 15.00, cat: "Massas" },
+        { name: "Vatapá", price: 15.00, cat: "Molhos" },
+        { name: "Maniçoba", price: 20.00, cat: "Molhos" },
+        { name: "Caruru", price: 15.00, cat: "Molhos" },
+        { name: "Strogonoff de carne", price: 15.00, cat: "Molhos" },
+        { name: "Strogonoff de frango", price: 15.00, cat: "Molhos" },
+        { name: "Frango no molho 4 queijo", price: 15.00, cat: "Molhos" },
+        { name: "Camarão no molho branco", price: 18.00, cat: "Molhos" },
+        { name: "Misto 1", price: 25.00, cat: "Combos" },
+        { name: "Misto 2", price: 30.00, cat: "Combos" },
+        { name: "Coxinha", price: 5.00, cat: "Salgados" },
+        { name: "Pizza", price: 12.00, cat: "Salgados" },
+        { name: "Empadinha", price: 5.00, cat: "Salgados" },
+        { name: "Bolo de Chocolate", price: 12.00, cat: "Doces" },
+        { name: "Bolo de cupuaçu", price: 12.00, cat: "Doces" },
+        { name: "Bolo delícia de morango", price: 12.00, cat: "Doces" },
+        { name: "Bolo delícia de abacaxi", price: 12.00, cat: "Doces" },
+        { name: "Bolo delícia de maracujá", price: 12.00, cat: "Doces" },
+        { name: "Bolo pudim", price: 12.00, cat: "Doces" },
+        { name: "Bolo de pote", price: 12.00, cat: "Doces" },
+        { name: "Bolo podre", price: 12.00, cat: "Doces" },
+        { name: "Creme de cupuaçu com pudim", price: 12.00, cat: "Doces" },
+        { name: "Mingau de milho", price: 7.00, cat: "Doces" },
+        { name: "Taça da felicidade no pote", price: 12.00, cat: "Doces" },
+        { name: "Pudim", price: 12.00, cat: "Doces" },
+        { name: "Refri Lata", price: 6.00, cat: "Bebidas" },
+        { name: "Refri de 600ml", price: 8.00, cat: "Bebidas" },
+        { name: "Refri 1 Litro", price: 10.00, cat: "Bebidas" },
+        { name: "Suco de 300ml", price: 5.00, cat: "Bebidas" },
+        { name: "Água", price: 3.00, cat: "Bebidas" }
+    ];
+
+    let cart = JSON.parse(localStorage.getItem('tati_cart')) || [];
+
+    document.getElementById('cust-cep').addEventListener('input', async (e) => {
+        let value = e.target.value.replace(/\D/g, '');
+        if (value.length > 5) value = value.replace(/^(\d{5})(\d)/, '$1-$2');
+        e.target.value = value;
+        if (value.replace('-', '').length === 8) {
+            const resp = await fetch(`https://viacep.com.br/ws/${value.replace('-','')}/json/`);
+            const data = await resp.json();
+            if (!data.erro) {
+                document.getElementById('cust-addr').value = data.logradouro;
+                document.getElementById('cust-bairro').value = data.bairro;
+                document.getElementById('cust-num').focus();
+            }
+        }
+    });
+
+    function renderMenu(category = 'Tudo') {
+        const grid = document.getElementById('products-grid');
+        const filtered = category === 'Tudo' ? menu : menu.filter(m => m.cat === category);
+        grid.innerHTML = filtered.map(item => `
+            <div class="card">
+                <div class="card-info">
+                    <h3>${item.name}</h3>
+                    <span>R$ ${item.price.toFixed(2)}</span>
+                </div>
+                <button class="btn-add" onclick="addToCart(this, '${item.name}', ${item.price})">Add +</button>
+            </div>
+        `).join('');
+    }
+
+    function filterMenu(cat, btn) {
+        document.querySelectorAll('.categories button').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        renderMenu(cat);
+    }
+
+    function addToCart(btn, name, price) {
+        const index = cart.findIndex(i => i.name === name);
+        if(index > -1) cart[index].qty++;
+        else cart.push({ name, price, qty: 1 });
+
+        // FEEDBACK VISUAL REATIVADO
+        const originalText = btn.innerText;
+        btn.innerText = "✔ OK";
+        btn.style.background = "var(--success)";
+        setTimeout(() => {
+            btn.innerText = originalText;
+            btn.style.background = "";
+        }, 700);
+
+        updateCart();
+    }
+
+    function updateCart() {
+        localStorage.setItem('tati_cart', JSON.stringify(cart));
+        const list = document.getElementById('cart-list');
+        const totalSpan = document.getElementById('total-price');
+        
+        if(cart.length === 0) {
+            list.innerHTML = "Nenhum item selecionado...";
+            totalSpan.innerText = "R$ 0.00";
+            return;
+        }
+
+        let subtotal = 0;
+        list.innerHTML = cart.map((item, i) => {
+            subtotal += (item.price * item.qty);
+            return `<div class="cart-item">
+                <div><strong>${item.qty}x</strong> ${item.name}</div>
+                <div class="qty-controls">
+                    <button class="btn-qty" onclick="changeQty(${i}, -1)">-</button>
+                    <button class="btn-qty" onclick="changeQty(${i}, 1)">+</button>
+                </div>
+            </div>`;
+        }).join('');
+        totalSpan.innerText = `R$ ${subtotal.toFixed(2)}`;
+    }
+
+    function changeQty(i, delta) {
+        cart[i].qty += delta;
+        if(cart[i].qty <= 0) cart.splice(i, 1);
+        updateCart();
+    }
+
+    function handlePaymentChange() {
+        const pay = document.getElementById('pay-method').value;
+        document.getElementById('cust-troco').style.display = (pay === 'Dinheiro') ? 'block' : 'none';
+        document.getElementById('msg-taxa-cartao').style.display = (pay === 'Cartão') ? 'block' : 'none';
+    }
+
+    function sendWhatsApp() {
+        const name = document.getElementById('cust-name').value;
+        const addr = document.getElementById('cust-addr').value;
+        const num = document.getElementById('cust-num').value;
+        const bairro = document.getElementById('cust-bairro').value;
+        const pay = document.getElementById('pay-method').value;
+
+        if (cart.length === 0 || !name || !addr || !num || !bairro || !pay) {
+            alert("⚠️ Preencha os campos obrigatórios!");
+            return;
+        }
+
+        let items = cart.map(i => `• ${i.qty}x ${i.name}`).join('%0A');
+        let total = document.getElementById('total-price').innerText;
+        let obs = document.getElementById('cust-obs').value;
+
+        let msg = `*NOVO PEDIDO - DELÍCIAS DA TATI*%0A%0A*Cliente:* ${name}%0A*Endereço:* ${addr}, ${num} - ${bairro}%0A`;
+        if(obs) msg += `*Obs:* ${obs}%0A`;
+        msg += `%0A*Itens:*%0A${items}%0A%0A*Subtotal:* ${total}%0A*Entrega:* A combinar%0A*Pagamento:* ${pay}`;
+        if(pay === 'Cartão') msg += ` (Taxa de 6% da operadora)`;
+        if(pay === 'Dinheiro' && document.getElementById('cust-troco').value) {
+            msg += `%0A*Troco para:* R$ ${document.getElementById('cust-troco').value}`;
+        }
+
+        window.open(`https://wa.me/${MY_PHONE}?text=${msg}`, '_blank');
+
+        // LIMPEZA DO CARRINHO REATIVADA
+        setTimeout(() => {
+            if(confirm("Pedido enviado? Deseja limpar seu carrinho?")) {
+                cart = [];
+                updateCart();
+                localStorage.removeItem('tati_cart');
+            }
+        }, 1500);
+    }
+
+    function initMap() {
+        const lat = -1.3479639;
+        const lng = -48.3752239;
+        const map = L.map('map').setView([lat, lng], 17);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
+        L.marker([lat, lng]).addTo(map).bindPopup('<b>Delícias da Tati</b>').openPopup();
+    }
+
+    window.onload = () => { renderMenu(); updateCart(); initMap(); };
+</script>
+</body>
+</html>
