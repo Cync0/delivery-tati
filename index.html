@@ -14,9 +14,10 @@
             --success: #28a745;
             --dark: #212529;
             --bg: #f8f9fa;
+            --warning: #ff8c00;
         }
 
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; background: var(--bg); padding-bottom: 140px; color: #333; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; background: var(--bg); padding-bottom: 140px; color: #333; scroll-behavior: smooth; }
         
         header { 
             background: linear-gradient(135deg, var(--primary), #8e44ad); 
@@ -24,20 +25,34 @@
             padding: 20px 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.2); 
         }
 
-        .logo-topo {
-            max-width: 120px;
-            height: auto;
-            margin-bottom: 10px;
+        .logo-topo { max-width: 120px; height: auto; margin-bottom: 10px; }
+
+        /* Estilo do Botão de Cardápio do Dia */
+        .btn-check-day {
+            padding: 15px 15px 5px; 
+            text-align: center; 
+            max-width: 500px; 
+            margin: auto;
         }
+        .btn-check-day button {
+            background: var(--warning); 
+            color: white; border: none; 
+            padding: 14px; border-radius: 15px; 
+            font-weight: bold; cursor: pointer; 
+            width: 100%; box-shadow: 0 4px 12px rgba(255, 140, 0, 0.3); 
+            font-size: 1rem; display: flex; 
+            align-items: center; justify-content: center; gap: 10px;
+            transition: 0.3s;
+        }
+        .btn-check-day button:active { transform: scale(0.96); }
 
         .container { max-width: 500px; margin: auto; padding: 15px; }
 
-        .categories { display: flex; gap: 10px; overflow-x: auto; padding: 10px 0; margin-bottom: 20px; scrollbar-width: none; }
+        .categories { display: flex; gap: 10px; overflow-x: auto; padding: 10px 0; margin-bottom: 20px; scrollbar-width: none; position: sticky; top: 0; background: var(--bg); z-index: 100; }
         .categories::-webkit-scrollbar { display: none; }
         .categories button { 
             background: white; border: 2px solid var(--secondary); color: var(--dark);
             padding: 10px 20px; border-radius: 25px; font-weight: bold; cursor: pointer; white-space: nowrap;
-            transition: 0.3s;
         }
         .categories button.active { background: var(--secondary); color: white; border-color: var(--secondary); }
 
@@ -46,28 +61,16 @@
             display: flex; justify-content: space-between; align-items: center;
             padding: 15px; box-shadow: 0 4px 10px rgba(0,0,0,0.05);
             border-left: 6px solid var(--primary);
-            transition: transform 0.2s;
         }
-        .card:active { transform: scale(0.98); }
         .card-info h3 { margin: 0; font-size: 1.05rem; }
         .card-info span { color: var(--primary); font-weight: bold; font-size: 1.1rem; display: block; margin-top: 5px; }
         
-        .btn-add { 
-            background: var(--primary); color: white; border: none; 
-            padding: 10px 15px; border-radius: 10px; cursor: pointer; font-weight: bold;
-            transition: all 0.3s ease;
-        }
+        .btn-add { background: var(--primary); color: white; border: none; padding: 10px 15px; border-radius: 10px; cursor: pointer; font-weight: bold; }
 
-        .section-title { 
-            border-bottom: 2px solid var(--secondary); 
-            margin: 30px 0 15px; font-size: 1.2rem; font-weight: bold; color: var(--primary);
-        }
+        .section-title { border-bottom: 2px solid var(--secondary); margin: 30px 0 15px; font-size: 1.2rem; font-weight: bold; color: var(--primary); }
 
         .form-group { background: #fff; padding: 20px; border-radius: 15px; box-shadow: 0 4px 12px rgba(0,0,0,0.08); }
-        input, select, textarea { 
-            width: 100%; padding: 14px; margin: 8px 0; border: 1px solid #ddd; 
-            border-radius: 10px; font-size: 1rem; box-sizing: border-box;
-        }
+        input, select, textarea { width: 100%; padding: 14px; margin: 8px 0; border: 1px solid #ddd; border-radius: 10px; font-size: 1rem; box-sizing: border-box; }
 
         #cart-list { background: #fff; padding: 15px; border-radius: 12px; border: 2px dashed var(--secondary); margin-bottom: 15px; min-height: 40px; }
         .cart-item { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid #eee; }
@@ -77,8 +80,6 @@
         .delivery-info { background: #fff3cd; padding: 12px; border-radius: 10px; margin-top: 10px; font-size: 0.9rem; color: #856404; text-align: center; border: 1px solid #ffeeba; }
 
         #map { height: 200px; width: 100%; border-radius: 15px; margin-top: 10px; border: 2px solid #fff; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
-        .map-caption { text-align: center; font-weight: bold; color: var(--dark); margin-top: 8px; font-size: 0.9rem; }
-
         #msg-taxa-cartao { color: #d9534f; font-size: 0.85rem; font-weight: bold; margin-top: 5px; display: none; }
 
         .footer-cart { 
@@ -88,6 +89,7 @@
             border-radius: 25px 25px 0 0;
         }
         .btn-order { background: var(--success); color: white; border: none; padding: 15px 25px; border-radius: 12px; font-weight: bold; cursor: pointer; font-size: 1.1rem; }
+        .btn-order:disabled { background: #6c757d; cursor: not-allowed; opacity: 0.6; }
     </style>
 </head>
 <body>
@@ -96,6 +98,14 @@
     <img src="https://i.ibb.co/FkBtJ01X/DT-Log.png" alt="Delícias da Tati" class="logo-topo">
     <p style="margin:0; opacity: 0.9;">Delivery: Sex, Sáb e Dom</p>
 </header>
+
+<div class="btn-check-day">
+    <a href="cardapio.html" style="text-decoration: none;">
+        <button>
+            📋 VER DISPONIBILIDADE DE HOJE (Atualizado)
+        </button>
+    </a>
+</div>
 
 <div class="container">
     <div class="categories" id="cat-nav">
@@ -113,7 +123,7 @@
 
     <h3 class="section-title">🛒 Seu Carrinho</h3>
     <div id="cart-list">Nenhum item selecionado...</div>
-    <div class="delivery-info">🛵 Entrega disponível para determinados locais. <strong>Consulte taxa e disponibilidade.</strong></div>
+    <div class="delivery-info">🛵 Entrega em Ananindeua. <strong>Consulte taxa e disponibilidade.</strong></div>
 
     <h3 class="section-title">📍 Endereço de Entrega</h3>
     <div class="form-group">
@@ -130,20 +140,19 @@
         <select id="pay-method" onchange="handlePaymentChange()">
             <option value="">Forma de Pagamento*</option>
             <option value="PIX">PIX</option>
-            <option value="Cartão">Cartão (Maquininha)</option>
+            <option value="Cartão">Cartão (Maquininha +6%)</option>
             <option value="Dinheiro">Dinheiro</option>
         </select>
-        <div id="msg-taxa-cartao">⚠️ Pagamento no cartão possui acréscimo de 6% da operadora.</div>
+        <div id="msg-taxa-cartao">⚠️ O valor total foi atualizado com os 6% da operadora.</div>
         <input type="text" id="cust-troco" placeholder="Troco para quanto?" style="display:none">
     </div>
 
     <h3 class="section-title">🚩 Onde estamos</h3>
     <div id="map"></div>
-    <div class="map-caption">Ananindeua-Pará</div>
 </div>
 
 <div class="footer-cart">
-    <div>Total Itens:<br><strong id="total-price" style="font-size:1.5rem">R$ 0.00</strong></div>
+    <div>Total:<br><strong id="total-price" style="font-size:1.5rem">R$ 0.00</strong></div>
     <button class="btn-order" id="btn-finalizar" onclick="sendWhatsApp()">Enviar Pedido</button>
 </div>
 
@@ -198,20 +207,32 @@
         { name: "Água", price: 3.00, cat: "Bebidas" }
     ];
 
-    let cart = JSON.parse(localStorage.getItem('tati_cart')) || [];
+    let cart = [];
 
+    // Busca de CEP
     document.getElementById('cust-cep').addEventListener('input', async (e) => {
         let value = e.target.value.replace(/\D/g, '');
         if (value.length > 5) value = value.replace(/^(\d{5})(\d)/, '$1-$2');
         e.target.value = value;
         if (value.replace('-', '').length === 8) {
-            const resp = await fetch(`https://viacep.com.br/ws/${value.replace('-','')}/json/`);
-            const data = await resp.json();
-            if (!data.erro) {
-                document.getElementById('cust-addr').value = data.logradouro;
-                document.getElementById('cust-bairro').value = data.bairro;
-                document.getElementById('cust-num').focus();
-            }
+            try {
+                const resp = await fetch(`https://viacep.com.br/ws/${value.replace('-','')}/json/`);
+                const data = await resp.json();
+                if (!data.erro) {
+                    document.getElementById('cust-addr').value = data.logradouro;
+                    document.getElementById('cust-bairro').value = data.bairro;
+                    document.getElementById('cust-num').focus();
+                }
+            } catch(e) { console.error("CEP não encontrado"); }
+        }
+    });
+
+    // Máscara Real Troco
+    document.getElementById('cust-troco').addEventListener('blur', (e) => {
+        let v = e.target.value.replace(/\D/g, '');
+        if(v) {
+            v = (v/100).toLocaleString('pt-br', {style: 'currency', currency: 'BRL'});
+            e.target.value = v;
         }
     });
 
@@ -230,39 +251,33 @@
     }
 
     function filterMenu(cat, btn) {
-        document.querySelectorAll('.categories button').forEach(b => b.classList.remove('active'));
+        document.querySelectorAll('.cat-nav button').forEach(b => b.classList.remove('active'));
         btn.classList.add('active');
         renderMenu(cat);
+        window.scrollTo({ top: 0, behavior: 'smooth' });
     }
 
     function addToCart(btn, name, price) {
         const index = cart.findIndex(i => i.name === name);
         if(index > -1) cart[index].qty++;
         else cart.push({ name, price, qty: 1 });
-
-        // FEEDBACK VISUAL REATIVADO
-        const originalText = btn.innerText;
-        btn.innerText = "✔ OK";
-        btn.style.background = "var(--success)";
-        setTimeout(() => {
-            btn.innerText = originalText;
-            btn.style.background = "";
-        }, 700);
-
         updateCart();
     }
 
     function updateCart() {
-        localStorage.setItem('tati_cart', JSON.stringify(cart));
         const list = document.getElementById('cart-list');
         const totalSpan = document.getElementById('total-price');
+        const pay = document.getElementById('pay-method').value;
+        const btnFinalizar = document.getElementById('btn-finalizar');
         
         if(cart.length === 0) {
             list.innerHTML = "Nenhum item selecionado...";
             totalSpan.innerText = "R$ 0.00";
+            btnFinalizar.disabled = true;
             return;
         }
 
+        btnFinalizar.disabled = false;
         let subtotal = 0;
         list.innerHTML = cart.map((item, i) => {
             subtotal += (item.price * item.qty);
@@ -274,7 +289,9 @@
                 </div>
             </div>`;
         }).join('');
-        totalSpan.innerText = `R$ ${subtotal.toFixed(2)}`;
+
+        let valorFinal = (pay === 'Cartão') ? subtotal * 1.06 : subtotal;
+        totalSpan.innerText = `R$ ${valorFinal.toFixed(2)}`;
     }
 
     function changeQty(i, delta) {
@@ -287,6 +304,7 @@
         const pay = document.getElementById('pay-method').value;
         document.getElementById('cust-troco').style.display = (pay === 'Dinheiro') ? 'block' : 'none';
         document.getElementById('msg-taxa-cartao').style.display = (pay === 'Cartão') ? 'block' : 'none';
+        updateCart();
     }
 
     function sendWhatsApp() {
@@ -297,32 +315,35 @@
         const pay = document.getElementById('pay-method').value;
 
         if (cart.length === 0 || !name || !addr || !num || !bairro || !pay) {
-            alert("⚠️ Preencha os campos obrigatórios!");
+            alert("⚠️ Preencha os campos obrigatórios (*)!");
             return;
         }
 
-        let items = cart.map(i => `• ${i.qty}x ${i.name}`).join('%0A');
+        let itemsMsg = cart.map(i => `• ${i.qty}x ${i.name}`).join('%0A');
         let total = document.getElementById('total-price').innerText;
+        let troco = document.getElementById('cust-troco').value;
         let obs = document.getElementById('cust-obs').value;
 
-        let msg = `*NOVO PEDIDO - DELÍCIAS DA TATI*%0A%0A*Cliente:* ${name}%0A*Endereço:* ${addr}, ${num} - ${bairro}%0A`;
+        let msg = `*NOVO PEDIDO - DELÍCIAS DA TATI*%0A`;
+        msg += `-----------------------------------%0A`;
+        msg += `*Cliente:* ${name}%0A`;
+        msg += `*Endereço:* ${addr}, ${num}%0A`;
+        msg += `*Bairro:* ${bairro}%0A`;
         if(obs) msg += `*Obs:* ${obs}%0A`;
-        msg += `%0A*Itens:*%0A${items}%0A%0A*Subtotal:* ${total}%0A*Entrega:* A combinar%0A*Pagamento:* ${pay}`;
-        if(pay === 'Cartão') msg += ` (Taxa de 6% da operadora)`;
-        if(pay === 'Dinheiro' && document.getElementById('cust-troco').value) {
-            msg += `%0A*Troco para:* R$ ${document.getElementById('cust-troco').value}`;
-        }
+        msg += `-----------------------------------%0A`;
+        msg += `*ITENS:*%0A${itemsMsg}%0A`;
+        msg += `-----------------------------------%0A`;
+        msg += `*TOTAL:* ${total}%0A`;
+        msg += `*PAGAMENTO:* ${pay}`;
+        if(pay === 'Dinheiro' && troco) msg += `%0A*LEVAR TROCO PARA:* ${troco}`;
+        msg += `%0A%0A*ENTREGA:* A combinar / consultar taxa`;
 
+        // LIMPEZA IMEDIATA
+        cart = [];
+        updateCart();
+        
         window.open(`https://wa.me/${MY_PHONE}?text=${msg}`, '_blank');
-
-        // LIMPEZA DO CARRINHO REATIVADA
-        setTimeout(() => {
-            if(confirm("Pedido enviado? Deseja limpar seu carrinho?")) {
-                cart = [];
-                updateCart();
-                localStorage.removeItem('tati_cart');
-            }
-        }, 1500);
+        alert("✅ Pedido enviado!");
     }
 
     function initMap() {
