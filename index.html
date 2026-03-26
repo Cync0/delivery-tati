@@ -27,7 +27,6 @@
 
         .logo-topo { max-width: 120px; height: auto; margin-bottom: 10px; }
 
-        /* Estilo do Botão de Cardápio do Dia */
         .btn-check-day {
             padding: 15px 15px 5px; 
             text-align: center; 
@@ -153,11 +152,25 @@
 
 <div class="footer-cart">
     <div>Total:<br><strong id="total-price" style="font-size:1.5rem">R$ 0.00</strong></div>
-    <button class="btn-order" id="btn-finalizar" onclick="sendWhatsApp()">Enviar Pedido</button>
+    <button class="btn-order" id="btn-finalizar" onclick="finalizarPedido()">Enviar Pedido</button>
 </div>
 
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-<script>
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+    import { getFirestore, collection, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+    const firebaseConfig = {
+        apiKey: "AIzaSyB2S8XoeoYuKI4EMXMSZlgraxlyWxqzvL4",
+        authDomain: "banco-de-dados-vendas-dt.firebaseapp.com",
+        projectId: "banco-de-dados-vendas-dt",
+        storageBucket: "banco-de-dados-vendas-dt.firebasestorage.app",
+        messagingSenderId: "212601722951",
+        appId: "1:212601722951:web:c21adcbf6ae6df71987962"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+
     const MY_PHONE = "5591991625255"; 
     
     const menu = [
@@ -209,32 +222,33 @@
 
     let cart = [];
 
-    // Busca de CEP
-    document.getElementById('cust-cep').addEventListener('input', async (e) => {
-        let value = e.target.value.replace(/\D/g, '');
-        if (value.length > 5) value = value.replace(/^(\d{5})(\d)/, '$1-$2');
-        e.target.value = value;
-        if (value.replace('-', '').length === 8) {
-            try {
-                const resp = await fetch(`https://viacep.com.br/ws/${value.replace('-','')}/json/`);
-                const data = await resp.json();
-                if (!data.erro) {
-                    document.getElementById('cust-addr').value = data.logradouro;
-                    document.getElementById('cust-bairro').value = data.bairro;
-                    document.getElementById('cust-num').focus();
-                }
-            } catch(e) { console.error("CEP não encontrado"); }
-        }
-    });
+    // Funções para exportar para o escopo global (usadas pelo HTML)
+    window.filterMenu = (cat, btn) => {
+        document.querySelectorAll('.categories button').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        renderMenu(cat);
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    };
 
-    // Máscara Real Troco
-    document.getElementById('cust-troco').addEventListener('blur', (e) => {
-        let v = e.target.value.replace(/\D/g, '');
-        if(v) {
-            v = (v/100).toLocaleString('pt-br', {style: 'currency', currency: 'BRL'});
-            e.target.value = v;
-        }
-    });
+    window.addToCart = (name, price) => {
+        const index = cart.findIndex(i => i.name === name);
+        if(index > -1) cart[index].qty++;
+        else cart.push({ name, price, qty: 1 });
+        updateCart();
+    };
+
+    window.changeQty = (i, delta) => {
+        cart[i].qty += delta;
+        if(cart[i].qty <= 0) cart.splice(i, 1);
+        updateCart();
+    };
+
+    window.handlePaymentChange = () => {
+        const pay = document.getElementById('pay-method').value;
+        document.getElementById('cust-troco').style.display = (pay === 'Dinheiro') ? 'block' : 'none';
+        document.getElementById('msg-taxa-cartao').style.display = (pay === 'Cartão') ? 'block' : 'none';
+        updateCart();
+    };
 
     function renderMenu(category = 'Tudo') {
         const grid = document.getElementById('products-grid');
@@ -245,23 +259,9 @@
                     <h3>${item.name}</h3>
                     <span>R$ ${item.price.toFixed(2)}</span>
                 </div>
-                <button class="btn-add" onclick="addToCart(this, '${item.name}', ${item.price})">Add +</button>
+                <button class="btn-add" onclick="addToCart('${item.name}', ${item.price})">Add +</button>
             </div>
         `).join('');
-    }
-
-    function filterMenu(cat, btn) {
-        document.querySelectorAll('.cat-nav button').forEach(b => b.classList.remove('active'));
-        btn.classList.add('active');
-        renderMenu(cat);
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-    }
-
-    function addToCart(btn, name, price) {
-        const index = cart.findIndex(i => i.name === name);
-        if(index > -1) cart[index].qty++;
-        else cart.push({ name, price, qty: 1 });
-        updateCart();
     }
 
     function updateCart() {
@@ -294,20 +294,35 @@
         totalSpan.innerText = `R$ ${valorFinal.toFixed(2)}`;
     }
 
-    function changeQty(i, delta) {
-        cart[i].qty += delta;
-        if(cart[i].qty <= 0) cart.splice(i, 1);
-        updateCart();
-    }
+    // Busca de CEP
+    document.getElementById('cust-cep').addEventListener('input', async (e) => {
+        let value = e.target.value.replace(/\D/g, '');
+        if (value.length > 5) value = value.replace(/^(\d{5})(\d)/, '$1-$2');
+        e.target.value = value;
+        if (value.replace('-', '').length === 8) {
+            try {
+                const resp = await fetch(`https://viacep.com.br/ws/${value.replace('-','')}/json/`);
+                const data = await resp.json();
+                if (!data.erro) {
+                    document.getElementById('cust-addr').value = data.logradouro;
+                    document.getElementById('cust-bairro').value = data.bairro;
+                    document.getElementById('cust-num').focus();
+                }
+            } catch(e) { console.error("CEP não encontrado"); }
+        }
+    });
 
-    function handlePaymentChange() {
-        const pay = document.getElementById('pay-method').value;
-        document.getElementById('cust-troco').style.display = (pay === 'Dinheiro') ? 'block' : 'none';
-        document.getElementById('msg-taxa-cartao').style.display = (pay === 'Cartão') ? 'block' : 'none';
-        updateCart();
-    }
+    // MÁSCARA TROCO
+    document.getElementById('cust-troco').addEventListener('blur', (e) => {
+        let v = e.target.value.replace(/\D/g, '');
+        if(v) {
+            v = (v/100).toLocaleString('pt-br', {style: 'currency', currency: 'BRL'});
+            e.target.value = v;
+        }
+    });
 
-    function sendWhatsApp() {
+    // FINALIZAR PEDIDO (SALVA NO FIREBASE E ENVIA WHATSAPP)
+    window.finalizarPedido = async () => {
         const name = document.getElementById('cust-name').value;
         const addr = document.getElementById('cust-addr').value;
         const num = document.getElementById('cust-num').value;
@@ -319,33 +334,58 @@
             return;
         }
 
-        let itemsMsg = cart.map(i => `• ${i.qty}x ${i.name}`).join('%0A');
-        let total = document.getElementById('total-price').innerText;
-        let troco = document.getElementById('cust-troco').value;
-        let obs = document.getElementById('cust-obs').value;
+        const total = document.getElementById('total-price').innerText;
+        const itensMsg = cart.map(i => `${i.qty}x ${i.name}`).join(', ');
+        const troco = document.getElementById('cust-troco').value;
+        const obs = document.getElementById('cust-obs').value;
 
-        let msg = `*NOVO PEDIDO - DELÍCIAS DA TATI*%0A`;
-        msg += `-----------------------------------%0A`;
-        msg += `*Cliente:* ${name}%0A`;
-        msg += `*Endereço:* ${addr}, ${num}%0A`;
-        msg += `*Bairro:* ${bairro}%0A`;
-        if(obs) msg += `*Obs:* ${obs}%0A`;
-        msg += `-----------------------------------%0A`;
-        msg += `*ITENS:*%0A${itemsMsg}%0A`;
-        msg += `-----------------------------------%0A`;
-        msg += `*TOTAL:* ${total}%0A`;
-        msg += `*PAGAMENTO:* ${pay}`;
-        if(pay === 'Dinheiro' && troco) msg += `%0A*LEVAR TROCO PARA:* ${troco}`;
-        msg += `%0A%0A*ENTREGA:* A combinar / consultar taxa`;
+        try {
+            // SALVA NO BANCO DE DADOS
+            await addDoc(collection(db, "pedidos"), {
+                cliente: name,
+                endereco: `${addr}, ${num}`,
+                bairro: bairro,
+                itens: itensMsg,
+                valor_total: total,
+                pagamento: pay,
+                observacao: obs,
+                troco: troco || "Não necessário",
+                data_pedido: serverTimestamp()
+            });
 
-        // LIMPEZA IMEDIATA
-        cart = [];
-        updateCart();
-        
-        window.open(`https://wa.me/${MY_PHONE}?text=${msg}`, '_blank');
-        alert("✅ Pedido enviado!");
-    }
+            // GERA MENSAGEM DO WHATSAPP
+            let msg = `*NOVO PEDIDO - DELÍCIAS DA TATI*%0A`;
+            msg += `-----------------------------------%0A`;
+            msg += `*Cliente:* ${name}%0A`;
+            msg += `*Endereço:* ${addr}, ${num}%0A`;
+            msg += `*Bairro:* ${bairro}%0A`;
+            if(obs) msg += `*Obs:* ${obs}%0A`;
+            msg += `-----------------------------------%0A`;
+            msg += `*ITENS:*%0A${cart.map(i => `• ${i.qty}x ${i.name}`).join('%0A')}%0A`;
+            msg += `-----------------------------------%0A`;
+            msg += `*TOTAL:* ${total}%0A`;
+            msg += `*PAGAMENTO:* ${pay}`;
+            if(pay === 'Dinheiro' && troco) msg += `%0A*LEVAR TROCO PARA:* ${troco}`;
+            msg += `%0A%0A*ENTREGA:* A combinar / consultar taxa`;
 
+            window.open(`https://wa.me/${MY_PHONE}?text=${msg}`, '_blank');
+            
+            // LIMPA TUDO
+            cart = [];
+            updateCart();
+            alert("✅ Pedido salvo no banco e enviado ao WhatsApp!");
+
+        } catch (error) {
+            console.error("Erro ao salvar pedido: ", error);
+            alert("Erro ao salvar pedido no banco de dados. Tente novamente.");
+        }
+    };
+
+    window.onload = () => { renderMenu(); updateCart(); initMap(); };
+</script>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
     function initMap() {
         const lat = -1.3479639;
         const lng = -48.3752239;
@@ -353,8 +393,6 @@
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
         L.marker([lat, lng]).addTo(map).bindPopup('<b>Delícias da Tati</b>').openPopup();
     }
-
-    window.onload = () => { renderMenu(); updateCart(); initMap(); };
 </script>
 </body>
 </html>
