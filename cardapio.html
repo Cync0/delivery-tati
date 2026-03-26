@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cardápio de Hoje - Delícias da Tati</title>
+    <style>
+        body { font-family: 'Segoe UI', sans-serif; background: #fff5f8; text-align: center; padding: 20px; margin: 0; }
+        .box { background: white; padding: 25px; border-radius: 25px; box-shadow: 0 8px 20px rgba(0,0,0,0.1); max-width: 400px; margin: 20px auto; border: 2px solid #f8bbd0; }
+        h1 { color: #d63384; margin-bottom: 5px; font-size: 1.5rem; }
+        .data { color: #888; font-size: 0.85rem; margin-bottom: 20px; display: block; }
+        
+        .prato { 
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 15px 0; border-bottom: 1px dashed #ffd1dc; font-weight: bold; font-size: 1.1rem;
+        }
+        .sim { color: #28a745; background: #e8f5e9; padding: 4px 10px; border-radius: 20px; font-size: 0.85rem; }
+        .nao { color: #dc3545; background: #ffebee; padding: 4px 10px; border-radius: 20px; font-size: 0.85rem; }
+        
+        .btn-voltar { 
+            display: block; margin-top: 25px; background: #d63384; color: white; 
+            text-decoration: none; padding: 15px; border-radius: 15px; font-weight: bold; 
+            box-shadow: 0 4px 10px rgba(214, 51, 132, 0.3);
+        }
+    </style>
+</head>
+<body>
+
+    <div class="box">
+        <h1>🍲 Hoje na Cozinha</h1>
+        <span class="data">Última atualização: Hoje</span>
+
+        <div class="status-container">
+            <div class="prato"><span>Maniçoba</span> <span class="sim">✅ Disponível</span></div>
+            <div class="prato"><span>Vatapá</span> <span class="sim">✅ Disponível</span></div>
+            <div class="prato"><span>Arroz Paraense</span> <span class="nao">❌ Esgotado</span></div>
+            <div class="prato"><span>Bolo de Pote</span> <span class="sim">✅ Disponível</span></div>
+        </div>
+
+        <a href="index.html" class="btn-voltar">🛒 VOLTAR E PEDIR</a>
+    </div>
+
+</body>
+</html>
