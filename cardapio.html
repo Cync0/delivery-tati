@@ -6,35 +6,105 @@
     <title>Cardápio de Hoje - Delícias da Tati</title>
     <style>
         body { font-family: 'Segoe UI', sans-serif; background: #fff5f8; text-align: center; padding: 20px; margin: 0; }
-        .box { background: white; padding: 25px; border-radius: 25px; box-shadow: 0 8px 20px rgba(0,0,0,0.1); max-width: 400px; margin: 20px auto; border: 2px solid #f8bbd0; }
+        .box { background: white; padding: 25px; border-radius: 25px; box-shadow: 0 8px 20px rgba(0,0,0,0.1); max-width: 800px; margin: 20px auto; border: 2px solid #f8bbd0; }
         h1 { color: #d63384; margin-bottom: 5px; font-size: 1.5rem; }
         .data { color: #888; font-size: 0.85rem; margin-bottom: 20px; display: block; }
         
+        /* Estrutura em duas colunas igual à foto */
+        .cardapio-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            text-align: left;
+        }
+
+        h2 { background: #d63384; color: white; font-size: 0.9rem; padding: 5px 10px; border-radius: 5px; margin-top: 20px; text-transform: uppercase; }
+
         .prato { 
             display: flex; justify-content: space-between; align-items: center;
-            padding: 15px 0; border-bottom: 1px dashed #ffd1dc; font-weight: bold; font-size: 1.1rem;
+            padding: 8px 0; border-bottom: 1px dashed #ffd1dc; font-weight: bold; font-size: 0.95rem;
         }
-        .sim { color: #28a745; background: #e8f5e9; padding: 4px 10px; border-radius: 20px; font-size: 0.85rem; }
-        .nao { color: #dc3545; background: #ffebee; padding: 4px 10px; border-radius: 20px; font-size: 0.85rem; }
+        .sim { color: #28a745; font-size: 0.75rem; font-weight: normal; }
+        .nao { color: #dc3545; font-size: 0.75rem; font-weight: normal; }
         
         .btn-voltar { 
             display: block; margin-top: 25px; background: #d63384; color: white; 
             text-decoration: none; padding: 15px; border-radius: 15px; font-weight: bold; 
             box-shadow: 0 4px 10px rgba(214, 51, 132, 0.3);
         }
+
+        /* Ajuste para celular */
+        @media (max-width: 600px) {
+            .cardapio-grid { grid-template-columns: 1fr; }
+        }
     </style>
 </head>
 <body>
 
     <div class="box">
-        <h1> CARDÁPIO </h1>
-        <span class="data">Última atualização: Hoje</span>
+        <h1> Delícias da Tati </h1>
+        <span class="data">Sexta-feira, 27/03</span>
 
-        <div class="status-container">
-            <div class="prato"><span>Maniçoba</span> <span class="sim">✅ Disponível</span></div>
-            <div class="prato"><span>Vatapá</span> <span class="sim">✅ Disponível</span></div>
-            <div class="prato"><span>Arroz Paraense</span> <span class="nao">❌ Esgotado</span></div>
-            <div class="prato"><span>Bolo de Pote</span> <span class="sim">✅ Disponível</span></div>
+        <div class="cardapio-grid">
+            <div>
+                <h2>Tradicionais</h2>
+                <div class="prato"><span>Torta salgada</span> <span class="sim">✅</span></div>
+                <div class="prato"><span>Arroz c/ galinha</span> <span class="sim">✅</span></div>
+                <div class="prato"><span>Arroz c/ charque/calabresa</span> <span class="sim">✅</span></div>
+                <div class="prato"><span>Arroz paraense</span> <span class="sim">✅</span></div>
+                <div class="prato"><span>Salpicão de Frango</span> <span class="sim">✅</span></div>
+                <div class="prato"><span>Empadão frango</span> <span class="sim">✅</span></div>
+                <div class="prato"><span>Escondidinho de carne</span> <span class="sim">✅</span></div>
+                <div class="prato"><span>Yakisoba</span> <span class="sim">✅</span></div>
+                <div class="prato"><span>Salada de camarão</span> <span class="sim">✅</span></div>
+
+                <h2>Massas</h2>
+                <div class="prato"><span>Lasanha de carne</span> <span class="sim">✅</span></div>
+                <div class="prato"><span>Lasanha de frango</span> <span class="sim">✅</span></div>
+                <div class="prato"><span>Camusquim camarão</span> <span class="sim">✅</span></div>
+                <div class="prato"><span>Macarronada rosa</span> <span class="sim">✅</span></div>
+                <div class="prato"><span>Panqueca carne</span> <span class="sim">✅</span></div>
+                <div class="prato"><span>Panqueca frango</span> <span class="sim">✅</span></div>
+
+                <h2>Salgados</h2>
+                <div class="prato"><span>Coxinha</span> <span class="sim">✅</span></div>
+                <div class="prato"><span>Pizza</span> <span class="sim">✅</span></div>
+                <div class="prato"><span>Empadinha</span> <span class="sim">✅</span></div>
+            </div>
+
+            <div>
+                <h2>Molhos</h2>
+                <div class="prato"><span>Vatapá</span> <span class="sim">✅</span></div>
+                <div class="prato"><span>Maniçoba</span> <span class="sim">✅</span></div>
+                <div class="prato"><span>Caruru</span> <span class="sim">✅</span></div>
+                <div class="prato"><span>Strogonoff carne</span> <span class="sim">✅</span></div>
+                <div class="prato"><span>Strogonoff frango</span> <span class="sim">✅</span></div>
+                <div class="prato"><span>Frango 4 queijo</span> <span class="sim">✅</span></div>
+                <div class="prato"><span>Camarão branco</span> <span class="sim">✅</span></div>
+                <div class="prato"><span>Misto 1</span> <span class="sim">✅</span></div>
+                <div class="prato"><span>Misto 2</span> <span class="sim">✅</span></div>
+
+                <h2>Doces</h2>
+                <div class="prato"><span>Bolo Chocolate</span> <span class="sim">✅</span></div>
+                <div class="prato"><span>Bolo cupuaçu</span> <span class="sim">✅</span></div>
+                <div class="prato"><span>Delícia morango</span> <span class="sim">✅</span></div>
+                <div class="prato"><span>Delícia abacaxi</span> <span class="sim">✅</span></div>
+                <div class="prato"><span>Delícia maracujá</span> <span class="sim">✅</span></div>
+                <div class="prato"><span>Bolo pudim</span> <span class="sim">✅</span></div>
+                <div class="prato"><span>Bolo de pote</span> <span class="sim">✅</span></div>
+                <div class="prato"><span>Bolo podre</span> <span class="sim">✅</span></div>
+                <div class="prato"><span>Creme cupuaçu/pudim</span> <span class="sim">✅</span></div>
+                <div class="prato"><span>Mingau de milho</span> <span class="sim">✅</span></div>
+                <div class="prato"><span>Taça felicidade</span> <span class="sim">✅</span></div>
+                <div class="prato"><span>Pudim</span> <span class="sim">✅</span></div>
+
+                <h2>Bebidas</h2>
+                <div class="prato"><span>Refri Lata</span> <span class="sim">✅</span></div>
+                <div class="prato"><span>Refri 600ml</span> <span class="sim">✅</span></div>
+                <div class="prato"><span>Refri 1 Litro</span> <span class="sim">✅</span></div>
+                <div class="prato"><span>Suco 300ml</span> <span class="sim">✅</span></div>
+                <div class="prato"><span>Água</span> <span class="sim">✅</span></div>
+            </div>
         </div>
 
         <a href="index.html" class="btn-voltar">🛒 VOLTAR E PEDIR</a>
